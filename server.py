@@ -18,9 +18,9 @@ def sent_analyzer():
     """
     text_to_analyze = request.args.get('textToAnalyze')
     analise = emotion_detector(text_to_analyze)
-    label = analise["label"]
-    score = analise["score"]
-    return f"The given text has been identified as {label.split('_')[1]} with a score of {score}."
+    dominant_emotion = analise["dominant_emotion"]
+    score = analise[dominant_emotion]
+    return f"The given text has been identified as {dominant_emotion} with a score of {score}."
 
 @app.route("/")
 def render_index_page():
