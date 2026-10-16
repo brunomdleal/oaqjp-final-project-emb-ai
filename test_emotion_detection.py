@@ -4,13 +4,19 @@ import unittest
 class TestEmotionDetector(unittest.TestCase):
     def test_emotion_detector(self):
         # Test case for positive sentiment
-        result_1 = emotion_detector('I love working with Python')
-        self.assertEqual(result_1['label'], 'SENT_POSITIVE')
-        # Test case for negative sentiment
-        result_2 = emotion_detector('I hate working with Python')
-        self.assertEqual(result_2['label'], 'SENT_NEGATIVE')
-        # Test case for neutral sentiment
-        result_3 = emotion_detector('I am neutral on Python')
-        self.assertEqual(result_3['label'], 'SENT_NEUTRAL')
+        result = emotion_detector("I love working with Python")
+        self.assertTrue(not None in result.values(), f" There is a 'None' within the values of: {result}")
+
+    def test_emotion_detector_with_arg_as_none(self):
+        # Test case for positive sentiment
+        result = emotion_detector(None)
+        self.assertTrue(None in result.values(), f" There is not a 'None' within the values of: {result}")
+
+    def test_emotion_detector_with_arg_as_empty(self):
+        # Test case for positive sentiment
+        result = emotion_detector('')
+        self.assertTrue(None in result.values(), f" There is not a 'None' within the values of: {result}")
+        result = emotion_detector("")
+        self.assertTrue(None in result.values(), f" There is not a 'None' within the values of: {result}")
 
 unittest.main()

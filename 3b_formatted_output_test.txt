@@ -1,0 +1,7 @@
+theia@theiadocker-brunomdleal:/home/project/practice_project$ python3 test_emotion_detection.py
+{'anger': 0.0076277987, 'disgust': 0.0032428813, 'fear': 0.033729397, 'joy': 0.9763664, 'sadness': 0.05379796, 'dominant_emotion': 'sadness'}
+...
+----------------------------------------------------------------------
+Ran 3 tests in 0.131s
+
+OK
