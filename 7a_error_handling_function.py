@@ -25,6 +25,8 @@ def handle_output(res, op):
             if e in emotions:
                 op[str(e)] = emotions[str(e)]
         op["dominant_emotion"] = max(emotions, key=emotions.get)
+    elif res.status_code == 400:
+        return "There was a problem with the request input", 400
     return op
 
 
@@ -43,7 +45,7 @@ def emotion_detector(text_to_analyse):
         "dominant_emotion": None
     }
     if text_to_analyse is None or text_to_analyse == "" or type(text_to_analyse) != str:
-        return op
+        return "Text to analyse is missing", 418
 
     res = handle_output(execute_nlp_request(text_to_analyse), op)
     return res

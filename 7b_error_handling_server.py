@@ -1,49 +1,47 @@
-"""Class responsible to deal with the sentiment analyzer"""
-import requests
+"""
+    Executing this function initiates the application of sentiment
+    analysis to be executed over the Flask channel and deployed on
+    localhost:5000.
+"""
+from flask import Flask, render_template, request
+from EmotionDetection.emotion_detection import emotion_detector
 
-def execute_nlp_request(text_to_analyse):
-    """
-        Responsible to generate the output
-        :argument text_to_analyse -> is the text we want to analise
-        :returns API response
-    """
-    url = "https://sn-watson-emotion.labs.skills.network/v1/watson.runtime.nlp.v1/NlpService/EmotionPredict"
-    header = {"grpc-metadata-mm-model-id": "emotion_aggregated-workflow_lang_en_stock"}
-    my_obj = {"raw_document": {"text": text_to_analyse}}
-    return requests.post(url, json=my_obj, headers=header)
+app = Flask("Sentiment Analyzer")
 
-def handle_output(res, op):
+@app.route("/emotionDetector")
+def sent_analyzer():
     """
-        Responsible to generate the output
-        :argument res -> Response of the API call
-        :argument op -> dictionary object
-        :returns op -> dictionary object
+        This code receives the text from the HTML interface and
+        runs sentiment analysis over it using sentiment_analysis()
+        function. The output returned shows the label and its confidence
+        score for the provided text.
     """
-    if res.status_code == 200:
-        emotions = res.json().get("emotionPredictions")[0].get("emotion")
-        for e in op.keys():
-            if e in emotions:
-                op[str(e)] = emotions[str(e)]
-        op["dominant_emotion"] = max(emotions, key=emotions.get)
-    return op
+    text_to_analyze = request.args.get('textToAnalyze')
+    analise = emotion_detector(text_to_analyze)
+    print(f"analise{analise}")
+    if "dominant_emotion" in analise:
+        dominant_emotion = analise["dominant_emotion"]
+        score = analise[dominant_emotion]
+        return f"The given text has been identified as {dominant_emotion} with a score of {score}."
+    else:
+        return analise
 
-
-def emotion_detector(text_to_analyse):
+@app.route("/")
+def render_index_page():
     """
-        Sends a 'POST' request to an API in order to get the sentiment analise
-        :argument text_to_analyse -> is the text we want to analise
-        :returns op dictionary object
+        This function initiates the rendering of the main application
+        page over the Flask channel
     """
-    op = {
-        "anger": None,
-        "disgust": None,
-        "fear": None,
-        "joy": None,
-        "sadness": None,
-        "dominant_emotion": None
-    }
-    if text_to_analyse is None or text_to_analyse == "" or type(text_to_analyse) != str:
-        return op
+    return render_template("index.html")
 
-    res = handle_output(execute_nlp_request(text_to_analyse), op)
-    return res
+if __name__ == "__main__":
+    #This functions executes the flask app and deploys it on localhost:5000
+    app.run(host="0.0.0.0", port=5000)
+
+@app.errorhandler(418)
+def text_to_evaluate_not_found(error):
+    return {"message": "Text to analyse is missing"}, 418
+
+@app.errorhandler(400)
+def bad_request(error):
+    return {"message": "Bad request"}, 400
