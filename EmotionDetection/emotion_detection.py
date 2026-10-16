@@ -1,8 +1,6 @@
 """Class responsible to deal with the sentiment analyzer"""
 import requests
 
-op = {}
-
 def execute_nlp_request(text_to_analyse):
     """
         Responsible to generate the output
@@ -14,18 +12,19 @@ def execute_nlp_request(text_to_analyse):
     my_obj = {"raw_document": {"text": text_to_analyse}}
     return requests.post(url, json=my_obj, headers=header)
 
-def handle_output(res):
+def handle_output(res, op):
     """
         Responsible to generate the output
         :argument res -> Response of the API call
-        :returns op dictionary object
+        :argument op -> dictionary object
+        :returns op -> dictionary object
     """
     if res.status_code == 200:
         emotions = res.json().get("emotionPredictions")[0].get("emotion")
         for e in op.keys():
             if e in emotions:
                 op[str(e)] = emotions[str(e)]
-        op["dominant_emotion"] = max(emotions)
+        op["dominant_emotion"] = max(emotions, key=emotions.get)
     return op
 
 
@@ -35,7 +34,6 @@ def emotion_detector(text_to_analyse):
         :argument text_to_analyse -> is the text we want to analise
         :returns op dictionary object
     """
-    global op
     op = {
         "anger": None,
         "disgust": None,
@@ -47,6 +45,5 @@ def emotion_detector(text_to_analyse):
     if text_to_analyse is None or text_to_analyse == "" or type(text_to_analyse) != str:
         return op
 
-    res = handle_output(execute_nlp_request(text_to_analyse))
-    print(res)
+    res = handle_output(execute_nlp_request(text_to_analyse), op)
     return res
