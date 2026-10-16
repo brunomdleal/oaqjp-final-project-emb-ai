@@ -1,52 +1,38 @@
-"""Class responsible to deal with the sentiment analyzer"""
+"""Module responsible for emotion detection using Watson NLP."""
+import json
 import requests
-
-op = {}
-
-def execute_nlp_request(text_to_analyse):
-    """
-        Responsible to generate the output
-        :argument text_to_analyse -> is the text we want to analise
-        :returns API response
-    """
-    url = "https://sn-watson-emotion.labs.skills.network/v1/watson.runtime.nlp.v1/NlpService/EmotionPredict"
-    header = {"grpc-metadata-mm-model-id": "emotion_aggregated-workflow_lang_en_stock"}
-    my_obj = {"raw_document": {"text": text_to_analyse}}
-    return requests.post(url, json=my_obj, headers=header)
-
-def handle_output(res):
-    """
-        Responsible to generate the output
-        :argument res -> Response of the API call
-        :returns op dictionary object
-    """
-    if res.status_code == 200:
-        emotions = res.json().get("emotionPredictions")[0].get("emotion")
-        for e in op.keys():
-            if e in emotions:
-                op[str(e)] = emotions[str(e)]
-        op["dominant_emotion"] = max(emotions)
-    return op
 
 
 def emotion_detector(text_to_analyse):
     """
-        Sends a 'POST' request to an API in order to get the sentiment analise
-        :argument text_to_analyse -> is the text we want to analise
-        :returns op dictionary object
+    Sends a POST request to Watson EmotionPredict API, extracts scores,
+    and returns a dictionary with each emotion score and the dominant emotion.
     """
-    global op
-    op = {
+    url = "https://sn-watson-emotion.labs.skills.network/v1/watson.runtime.nlp.v1/NlpService/EmotionPredict"
+    headers = {"grpc-metadata-mm-model-id": "emotion_aggregated-workflow_lang_en_stock"}
+    my_obj = {"raw_document": {"text": text_to_analyse}}
+
+    response = requests.post(url, json=my_obj, headers=headers)
+
+    if response.status_code == 200:
+        formatted_response = json.loads(response.text)
+        emotions = formatted_response["emotionPredictions"][0]["emotion"]
+        dominant_emotion = max(emotions, key=emotions.get)
+
+        return {
+            "anger": emotions["anger"],
+            "disgust": emotions["disgust"],
+            "fear": emotions["fear"],
+            "joy": emotions["joy"],
+            "sadness": emotions["sadness"],
+            "dominant_emotion": dominant_emotion,
+        }
+
+    return {
         "anger": None,
         "disgust": None,
         "fear": None,
         "joy": None,
         "sadness": None,
-        "dominant_emotion": None
+        "dominant_emotion": None,
     }
-    if text_to_analyse is None or text_to_analyse == "" or type(text_to_analyse) != str:
-        return op
-
-    res = handle_output(execute_nlp_request(text_to_analyse))
-    print(res)
-    return res
