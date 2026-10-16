@@ -1,25 +1,52 @@
 """Class responsible to deal with the sentiment analyzer"""
-import requests, json
+import requests
+
+op = {}
+
+def execute_nlp_request(text_to_analyse):
+    """
+        Responsible to generate the output
+        :argument text_to_analyse -> is the text we want to analise
+        :returns API response
+    """
+    url = "https://sn-watson-emotion.labs.skills.network/v1/watson.runtime.nlp.v1/NlpService/EmotionPredict"
+    header = {"grpc-metadata-mm-model-id": "emotion_aggregated-workflow_lang_en_stock"}
+    my_obj = {"raw_document": {"text": text_to_analyse}}
+    return requests.post(url, json=my_obj, headers=header)
+
+def handle_output(res):
+    """
+        Responsible to generate the output
+        :argument res -> Response of the API call
+        :returns op dictionary object
+    """
+    if res.status_code == 200:
+        emotions = res.json().get("emotionPredictions")[0].get("emotion")
+        for e in op.keys():
+            if e in emotions:
+                op[str(e)] = emotions[str(e)]
+        op["dominant_emotion"] = max(emotions)
+    return op
+
 
 def emotion_detector(text_to_analyse):
     """
         Sends a 'POST' request to an API in order to get the sentiment analise
         :argument text_to_analyse -> is the text we want to analise
+        :returns op dictionary object
     """
-    url = "https://sn-watson-sentiment-bert.labs.skills.network/v1/watson.runtime.nlp.v1/NlpService/SentimentPredict"
-    header = {"grpc-metadata-mm-model-id": "sentiment_aggregated-bert-workflow_lang_multi_stock"}
-    my_obj = { "raw_document": { "text": text_to_analyse } }
-    res = requests.post(url, json=my_obj, headers=header)
-    if res.status_code == 200:
-        formated_res = json.loads(res.text)
-        label = formated_res["documentSentiment"]["label"]
-        score = formated_res["documentSentiment"]["score"]
-    else:
-        label = None
-        score = None
-    # Check if the label is None, indicating an error or invalid input
-    if label is None:
-        return "Invalid input! Try again."
-    else:
-        # Return a formatted string with the sentiment label and score
-        return "The given text has been identified as {} with a score of {}.".format(label.split('_')[1], score)
+    global op
+    op = {
+        "anger": None,
+        "disgust": None,
+        "fear": None,
+        "joy": None,
+        "sadness": None,
+        "dominant_emotion": None
+    }
+    if text_to_analyse is None or text_to_analyse == "" or type(text_to_analyse) != str:
+        return op
+
+    res = handle_output(execute_nlp_request(text_to_analyse))
+    print(res)
+    return res
