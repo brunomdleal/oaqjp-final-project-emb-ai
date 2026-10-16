@@ -23,8 +23,7 @@ def sent_analyzer():
         dominant_emotion = analise["dominant_emotion"]
         score = analise[dominant_emotion]
         return f"The given text has been identified as {dominant_emotion} with a score of {score}."
-    else:
-        return analise
+    return analise
 
 @app.route("/")
 def render_index_page():
@@ -39,9 +38,15 @@ if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
 
 @app.errorhandler(418)
-def text_to_evaluate_not_found(error):
+def text_to_evaluate_not_found():
+    """
+        This function handles the throwing error: Missing text to analyse
+    """
     return {"message": "Text to analyse is missing"}, 418
 
 @app.errorhandler(400)
-def bad_request(error):
+def bad_request():
+    """
+        This function handles the throwing error: Bad request
+    """
     return {"message": "Bad request"}, 400
