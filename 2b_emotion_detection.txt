@@ -1,0 +1,13 @@
+theia@theiadocker-brunomdleal:/home/project/practice_project$ python3.11
+Python 3.11.15 (main, Mar  3 2026, 09:26:23) [GCC 11.4.0] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>> from emotion_detection import emotion_detector
+>>> print(emotion_detector('I am really mad about this'))
+{'label': 'SENT_NEGATIVE', 'score': -0.965187}
+>>> exit()
+theia@theiadocker-brunomdleal:/home/project/practice_project$ python3 test_emotion_detection.py 
+.
+----------------------------------------------------------------------
+Ran 1 test in 0.744s
+
+OK
